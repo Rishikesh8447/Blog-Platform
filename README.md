@@ -13,15 +13,6 @@ The platform provides a clean UI, a modern writing editor, and features like tre
 A **Full Stack Blogging Platform** where users can create, read, update, and interact with blog posts.  
 The platform provides a clean UI, a modern writing editor, and features like trending blogs, dark mode, and comments.
 
----
-
-## 🚀 Live Demo
-
-🌐 Live Website: (Add your Render link here)  
-📂 GitHub Repository: (Add your GitHub repo link here)
-
----
-
 ## 🛠 Tech Stack
 
 - Node.js – Backend runtime
