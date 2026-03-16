@@ -150,7 +150,7 @@ This project is deployed using:
 ## 📸 Screenshots
 
 <img width="756" height="839" alt="HomePage jpg" src="https://github.com/user-attachments/assets/456ea056-da30-49b2-9e35-b282e5494127" />
-<img width="756" height="839" alt="HomePage jpg" src="https://github.com/user-attachments/assets/456ea056-da30-49b2-9e35-b282e5494127" />
+<img width="756" height="839" 
 
 <img width="471" height="812" alt="Preview jpg" src="https://github.com/user-attachments/assets/27d3491e-6c90-42b8-b990-6b807829ceea" />
 
