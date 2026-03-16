@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title>Blog Dashboard</title>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+
+  <div class="page-wrap d-grid gap-4">
+    <section class="page-card">
+      <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+          <div class="section-title">Overview</div>
+          <h1 class="page-heading">Publishing Dashboard</h1>
+          <p class="page-subtitle">Manage your writing system, surface trending stories, and keep the whole app inside one clean dashboard-style interface.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="/blog/add-new" class="brand-btn">Add Blog</a>
+          <a href="/blog/random" class="ghost-btn">Surprise Me</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-card">
+      <div class="panel__header">
+        <h2 class="panel__title">Explore Blogs</h2>
+        <span class="soft-muted small">Search, filter, and jump into any post fast.</span>
+      </div>
+      <form action="/" method="get" class="dashboard-search">
+        <input type="text" class="surface-input" name="search" value="<%= search %>" placeholder="Search blogs">
+        <select class="surface-select" name="category">
+          <% categories.forEach(category => { %>
+            <option value="<%= category %>" <%= selectedCategory === category ? "selected" : "" %>><%= category %></option>
+          <% }) %>
+        </select>
+        <button type="submit" class="brand-btn border-0">Search</button>
+      </form>
+    </section>
+
+    <section class="row g-3">
+      <div class="col-md-6 col-xl-3">
+        <div class="metric-card metric-card--accent">
+          <div class="section-title" style="color: rgba(255,255,255,0.82);">Published Blogs</div>
+          <div class="metric-value"><%= dashboardStats.totalBlogs %></div>
+          <div class="small">Stories live for your readers</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="metric-card">
+          <div class="section-title">Views</div>
+          <div class="metric-value"><%= dashboardStats.totalViews %></div>
+          <div class="small soft-muted">Audience reach across all posts</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="metric-card">
+          <div class="section-title">Likes</div>
+          <div class="metric-value"><%= dashboardStats.totalLikes %></div>
+          <div class="small soft-muted">Reader reactions collected</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <div class="metric-card">
+          <div class="section-title">Categories</div>
+          <div class="metric-value"><%= dashboardStats.categories %></div>
+          <div class="small soft-muted">Active topics in your content mix</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="row g-4">
+      <div class="col-lg-7">
+        <div class="section-card h-100">
+          <div class="panel__header">
+            <h2 class="panel__title">Recent Blogs</h2>
+            <span class="soft-muted small">Latest posts in your stream</span>
+          </div>
+
+          <% if (blogs.length) { %>
+            <div class="row g-3">
+              <% blogs.forEach(blog => { %>
+                <div class="col-md-6">
+                  <article class="blog-card">
+                    <img
+                      src="<%= blog.coverImageURL || '/images/default.png' %>"
+                      alt="<%= blog.title %>"
+                      class="blog-card__media"
+                    >
+                    <div class="blog-card__body">
+                      <div class="blog-card__meta">
+                        <span class="mini-pill"><%= blog.category || "General" %></span>
+                        <span><%= blog.readingTime || 1 %> min read</span>
+                      </div>
+                      <h3 class="h4 mb-0"><%= blog.title %></h3>
+                      <div class="blog-card__meta">
+                        <span><%= blog.likesCount %> likes</span>
+                        <span><%= blog.commentCount %> comments</span>
+                      </div>
+                      <div class="blog-card__actions">
+                        <span class="soft-muted small">Published</span>
+                        <a href="/blog/<%= blog.slug || blog._id %>" class="brand-btn">View</a>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="app-list-item text-center soft-muted">No blogs found for this filter.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="col-lg-5 d-grid gap-4">
+        <div class="section-card">
+          <div class="panel__header">
+            <h2 class="panel__title">Trending Posts</h2>
+            <span class="soft-muted small">Most viewed right now</span>
+          </div>
+          <div class="d-grid gap-3">
+            <% if (trendingBlogs.length) { %>
+              <% trendingBlogs.forEach(blog => { %>
+                <a href="/blog/<%= blog.slug || blog._id %>" class="app-list-item d-flex justify-content-between align-items-center text-decoration-none">
+                  <div>
+                    <div class="fw-bold"><%= blog.title %></div>
+                    <div class="small soft-muted"><%= blog.category || "General" %></div>
+                  </div>
+                  <span class="mini-pill"><%= blog.views || 0 %></span>
+                </a>
+              <% }) %>
+            <% } else { %>
+              <div class="app-list-item soft-muted">No trending blogs yet.</div>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="panel__header">
+            <h2 class="panel__title">Category Breakdown</h2>
+            <span class="soft-muted small">What you are writing about</span>
+          </div>
+          <div class="d-grid gap-3">
+            <% if (Object.keys(categoryBreakdown).length) { %>
+              <% Object.keys(categoryBreakdown).forEach(category => { %>
+                <div class="app-list-item d-flex justify-content-between align-items-center">
+                  <span><%= category %></span>
+                  <span class="mini-pill"><%= categoryBreakdown[category] %></span>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="app-list-item soft-muted">No category data yet.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <% if (totalPages > 1) { %>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <% if (currentPage > 1) { %>
+          <a class="pagination-pill" href="/?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search) %>&category=<%= encodeURIComponent(selectedCategory) %>">&lt;</a>
+        <% } %>
+        <% for (let page = 1; page <= totalPages; page++) { %>
+          <% if (currentPage === page) { %>
+            <span class="pagination-pill is-active"><%= page %></span>
+          <% } else { %>
+            <a class="pagination-pill" href="/?page=<%= page %>&search=<%= encodeURIComponent(search) %>&category=<%= encodeURIComponent(selectedCategory) %>"><%= page %></a>
+          <% } %>
+        <% } %>
+        <% if (currentPage < totalPages) { %>
+          <a class="pagination-pill" href="/?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search) %>&category=<%= encodeURIComponent(selectedCategory) %>">&gt;</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <%- include("./partials/scripts") %>
+</body>
+</html>

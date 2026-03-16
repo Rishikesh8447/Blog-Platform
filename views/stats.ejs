@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title>Blog Stats</title>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+
+  <div class="page-wrap d-grid gap-4">
+    <section class="page-card">
+      <div class="section-title">Insights</div>
+      <h1 class="page-heading">Blog Stats Dashboard</h1>
+      <p class="page-subtitle">Track publishing performance, identify top stories, and understand how your content mix is evolving.</p>
+    </section>
+
+    <section class="row g-3">
+      <div class="col-md-6 col-xl-3"><div class="metric-card metric-card--accent"><div class="section-title" style="color: rgba(255,255,255,0.8);">Total Blogs</div><div class="metric-value"><%= totalBlogs %></div></div></div>
+      <div class="col-md-6 col-xl-3"><div class="metric-card"><div class="section-title">Drafts</div><div class="metric-value"><%= draftsCount %></div></div></div>
+      <div class="col-md-6 col-xl-3"><div class="metric-card"><div class="section-title">Published</div><div class="metric-value"><%= publishedCount %></div></div></div>
+      <div class="col-md-6 col-xl-3"><div class="metric-card"><div class="section-title">Avg. Reading</div><div class="metric-value"><%= averageReadingTime %>m</div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="metric-card"><div class="section-title">Views</div><div class="metric-value"><%= totalViews %></div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="metric-card"><div class="section-title">Likes</div><div class="metric-value"><%= totalLikes %></div></div></div>
+      <div class="col-md-6 col-xl-4"><div class="metric-card"><div class="section-title">Comments</div><div class="metric-value"><%= commentsCount %></div></div></div>
+    </section>
+
+    <section class="row g-4">
+      <div class="col-lg-7">
+        <div class="section-card h-100">
+          <div class="panel__header">
+            <h2 class="panel__title">Top Blogs</h2>
+            <span class="soft-muted small">Best performing articles</span>
+          </div>
+          <div class="d-grid gap-3">
+            <% topBlogs.forEach(blog => { %>
+              <a href="/blog/<%= blog.slug || blog._id %>" class="app-list-item d-flex justify-content-between align-items-center text-decoration-none">
+                <div>
+                  <div class="fw-bold"><%= blog.title %></div>
+                  <div class="small soft-muted"><%= blog.views || 0 %> views | <%= blog.likes?.length || 0 %> likes</div>
+                </div>
+                <span class="mini-pill">Open</span>
+              </a>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="section-card h-100">
+          <div class="panel__header">
+            <h2 class="panel__title">Category Breakdown</h2>
+            <span class="soft-muted small">Content mix</span>
+          </div>
+          <div class="d-grid gap-3">
+            <% Object.keys(categoryBreakdown).forEach(category => { %>
+              <div class="app-list-item d-flex justify-content-between align-items-center">
+                <span><%= category %></span>
+                <span class="mini-pill"><%= categoryBreakdown[category] %></span>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="row g-3">
+      <div class="col-md-6">
+        <div class="section-card h-100">
+          <div class="section-title">Most Viewed</div>
+          <h3 class="h4 mb-0"><%= mostViewedBlog ? mostViewedBlog.title : "No data" %></h3>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="section-card h-100">
+          <div class="section-title">Most Commented</div>
+          <h3 class="h4 mb-0"><%= mostCommentedBlog ? mostCommentedBlog.title : "No data" %></h3>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <%- include("./partials/scripts") %>
+</body>
+</html>

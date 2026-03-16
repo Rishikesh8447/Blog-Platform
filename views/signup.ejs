@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title>Signup</title>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+
+  <div class="page-wrap">
+    <div class="auth-card mx-auto" style="max-width: 620px; padding: 30px;">
+      <div class="section-title">Create</div>
+      <h1 class="page-heading" style="font-size: 2.2rem;">Create Your Account</h1>
+      <p class="page-subtitle mb-4">Join the workspace and start publishing blogs with analytics, drafts, and recommendations.</p>
+
+      <form action="/user/signup" method="post" class="d-grid gap-3">
+        <div>
+          <label for="fullName" class="form-label fw-semibold">Full Name</label>
+          <input type="text" class="form-control surface-input" id="fullName" name="fullName" placeholder="Enter your full name" required>
+        </div>
+
+        <div>
+          <label for="email" class="form-label fw-semibold">Email address</label>
+          <input type="email" class="form-control surface-input" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+
+        <div>
+          <label for="password" class="form-label fw-semibold">Password</label>
+          <input type="password" class="form-control surface-input" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="brand-btn border-0">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include("./partials/scripts") %>
+</body>
+</html>

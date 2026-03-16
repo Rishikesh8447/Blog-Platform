@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title>Write a New Blog</title>
+  <style>
+    .editor-pane { min-height: 330px; border: 1px solid var(--line); border-radius: 18px; padding: 0.8rem; background: var(--surface); }
+    .editor-textarea { border: none; outline: none; resize: vertical; width: 100%; min-height: 260px; font-size: 1rem; line-height: 1.7; background: transparent; color: var(--ink); }
+    .editor-textarea::placeholder { color: color-mix(in srgb, var(--color-base-content) 50%, transparent); opacity: 1; }
+    .toolbar { background: var(--surface-strong); border: 1px solid var(--line); border-radius: 16px; padding: 0.45rem; }
+    .toolbar-button { border: none; border-radius: 12px; background: color-mix(in srgb, var(--color-base-100) 92%, transparent); padding: 0.45rem 0.7rem; margin: 0 0.2rem 0.2rem 0; color: var(--ink); font-weight: 700; transition: all .15s ease; }
+    .toolbar-button:hover { background: color-mix(in srgb, var(--color-primary) 12%, var(--color-base-100)); }
+    .editor-title { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; border: none; outline: none; box-shadow: none; background: transparent; width:100%; color: var(--ink) !important; -webkit-text-fill-color: var(--ink); caret-color: var(--accent); }
+    .editor-title::placeholder { color: color-mix(in srgb, var(--color-base-content) 54%, transparent); opacity: 1; }
+    #preview { color: var(--ink); overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+  <main class="page-wrap">
+    <div class="page-card">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+          <div class="section-title">Create</div>
+          <h1 class="page-heading">Write a New Blog</h1>
+          <p class="page-subtitle">Compose, preview, autosave, and publish inside the same dashboard writing flow.</p>
+        </div>
+        <span class="mini-pill">Draft</span>
+      </div>
+
+      <form id="blogForm" action="/blog" method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+          <input id="title" name="title" type="text" class="editor-title" placeholder="Enter your blog title..." required>
+        </div>
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="mb-2 toolbar" role="toolbar">
+              <button type="button" data-action="bold" class="toolbar-button">B</button>
+              <button type="button" data-action="italic" class="toolbar-button"><em>I</em></button>
+              <button type="button" data-action="h1" class="toolbar-button">H1</button>
+              <button type="button" data-action="h2" class="toolbar-button">H2</button>
+              <button type="button" data-action="code" class="toolbar-button">Code</button>
+              <button type="button" data-action="quote" class="toolbar-button">Quote</button>
+              <button type="button" data-action="olist" class="toolbar-button">1.</button>
+              <button type="button" data-action="ulist" class="toolbar-button">-</button>
+              <label class="toolbar-button mb-0">Insert Image <input type="file" id="imageUpload" accept="image/*" hidden></label>
+            </div>
+            <div class="editor-pane">
+              <textarea id="editor" class="editor-textarea" placeholder="Start writing your blog content..."></textarea>
+            </div>
+            <div class="d-flex justify-content-between mt-2 text-muted small">
+              <span id="autosaveStatus">Autosave: not saved yet</span>
+              <span>Use **bold**, *italic*, # headings</span>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="section-card h-100">
+              <div class="section-title mb-2">Live Preview</div>
+              <div id="preview" class="small" style="min-height:320px;"></div>
+            </div>
+          </div>
+        </div>
+        <hr class="my-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Cover Image</label>
+            <input type="file" name="coverImage" class="form-control surface-input" accept="image/*">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Category</label>
+            <select name="category" class="form-select surface-select"><option>General</option><option>Technology</option><option>Programming</option><option>Lifestyle</option><option>News</option></select>
+          </div>
+          <div class="col-md-3"><div class="form-check pt-4"><input class="form-check-input" type="checkbox" name="isDraft" id="isDraft"><label class="form-check-label" for="isDraft">Save as draft</label></div></div>
+          <div class="col-md-2 text-end"><button type="submit" class="brand-btn border-0 w-100">Publish</button></div>
+        </div>
+        <input type="hidden" name="body" id="bodyInput">
+      </form>
+    </div>
+  </main>
+  <%- include("./partials/scripts") %>
+  <script>
+    (() => {
+      const editor = document.getElementById("editor");
+      const bodyInput = document.getElementById("bodyInput");
+      const preview = document.getElementById("preview");
+      const autosaveStatus = document.getElementById("autosaveStatus");
+      const titleInput = document.getElementById("title");
+      const form = document.getElementById("blogForm");
+
+      const STORAGE_KEY = "notionBlogDraft";
+
+      const saveDraft = () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ title: titleInput.value, body: editor.value, updatedAt: new Date().toISOString() }));
+        autosaveStatus.textContent = `Autosave: ${new Date().toLocaleTimeString()}`;
+      };
+
+      const parseMarkdown = (text) => {
+        if (!text) return "<p class='soft-muted'>Nothing yet. Start writing your blog content.</p>";
+        const htmlLines = [];
+        const lines = text.split("\n");
+        let inCode = false;
+
+        for (let i = 0; i < lines.length; i++) {
+          let line = lines[i];
+
+          if (line.trim() === "```") {
+            inCode = !inCode;
+            htmlLines.push(inCode ? "<pre class='rounded-2xl p-3' style='background:#0f172a;color:#f8fafc;'><code>" : "</code></pre>");
+            continue;
+          }
+
+          if (inCode) {
+            htmlLines.push(line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + "\n");
+            continue;
+          }
+
+          if (line.startsWith("# ")) { htmlLines.push(`<h2 class='h3 mt-3'>${line.slice(2).trim()}</h2>`); continue; }
+          if (line.startsWith("## ")) { htmlLines.push(`<h3 class='h4 mt-3'>${line.slice(3).trim()}</h3>`); continue; }
+          if (line.startsWith("### ")) { htmlLines.push(`<h4 class='h5 mt-3'>${line.slice(4).trim()}</h4>`); continue; }
+          if (line.startsWith("> ")) { htmlLines.push(`<blockquote class='border-start border-4 ps-3 fst-italic soft-muted'>${line.slice(2)}</blockquote>`); continue; }
+          if (line.match(/^\d+\.\s+/)) { htmlLines.push(`<li>${line.replace(/^\d+\.\s+/, "")}</li>`); continue; }
+          if (line.startsWith("- ") || line.startsWith("* ")) { htmlLines.push(`<li>${line.slice(2)}</li>`); continue; }
+          if (line.trim() === "") { htmlLines.push("<br>"); continue; }
+
+          const escaped = line
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.+?)\*/g, "<em>$1</em>")
+            .replace(/`([^`]+)`/g, "<code class='px-1 rounded' style='background:#eef3ef;'>$1</code>")
+            .replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, "<img class='img-fluid rounded-2xl border' src='$2' alt='$1' />");
+
+          htmlLines.push(`<p class='mb-2'>${escaped}</p>`);
+        }
+
+        return htmlLines.join("\n").replace(/(<li>.*?<\/li>)(\s*<li>.*?<\/li>)+/gs, (match) => {
+          const items = match.match(/<li>.*?<\/li>/gs) || [];
+          return `<ul class='ps-4'>${items.join("")}</ul>`;
+        });
+      };
+
+      const updatePreview = () => {
+        preview.innerHTML = parseMarkdown(editor.value);
+      };
+
+      const applyWrap = (wrapper) => {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selected = editor.value.slice(start, end) || "text";
+        const before = editor.value.slice(0, start);
+        const after = editor.value.slice(end);
+        let insertion = selected;
+
+        if (wrapper === "h1") insertion = `# ${selected}`;
+        else if (wrapper === "h2") insertion = `## ${selected}`;
+        else if (wrapper === "code") insertion = `\n\n\`\`\`\n${selected}\n\`\`\`\n\n`;
+        else if (wrapper === "quote") insertion = `> ${selected}`;
+        else if (wrapper === "olist") insertion = `1. ${selected}`;
+        else if (wrapper === "ulist") insertion = `- ${selected}`;
+        else if (wrapper === "bold") insertion = `**${selected}**`;
+        else if (wrapper === "italic") insertion = `*${selected}*`;
+
+        editor.value = `${before}${insertion}${after}`;
+        editor.focus();
+        updatePreview();
+      };
+
+      document.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => applyWrap(button.dataset.action));
+      });
+
+      document.getElementById("imageUpload").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const url = reader.result;
+          const cursor = editor.selectionStart;
+          editor.value = editor.value.slice(0, cursor) + `\n\n![Image](${url})\n\n` + editor.value.slice(cursor);
+          updatePreview();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      editor.addEventListener("input", updatePreview);
+      setInterval(saveDraft, 3000);
+      localStorage.removeItem(STORAGE_KEY);
+      titleInput.value = "";
+      editor.value = "";
+      updatePreview();
+
+      form.addEventListener("submit", (event) => {
+        bodyInput.value = editor.value;
+        if (!titleInput.value.trim()) {
+          event.preventDefault();
+          alert("Please add a title before publishing.");
+          titleInput.focus();
+          return;
+        }
+        localStorage.removeItem(STORAGE_KEY);
+      });
+    })();
+  </script>
+</body>
+</html>

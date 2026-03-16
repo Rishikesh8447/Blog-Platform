@@ -1,0 +1,26 @@
+<script src="/static/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(() => {
+  const selector = document.getElementById("themeSelector");
+  const storageKey = "blogoraTheme";
+  const allowedThemes = new Set(["light", "sage", "forest", "midnight", "latte"]);
+
+  function applyTheme(theme) {
+    const finalTheme = allowedThemes.has(theme) ? theme : "light";
+    document.documentElement.setAttribute("data-app-theme", finalTheme);
+    localStorage.setItem(storageKey, finalTheme);
+    if (selector) {
+      selector.value = finalTheme;
+    }
+  }
+
+  const savedTheme = localStorage.getItem(storageKey) || "light";
+  applyTheme(savedTheme);
+
+  if (selector) {
+    selector.addEventListener("change", (event) => {
+      applyTheme(event.target.value);
+    });
+  }
+})();
+</script>

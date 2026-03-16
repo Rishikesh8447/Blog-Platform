@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title>Signin</title>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+
+  <div class="page-wrap">
+    <div class="auth-card mx-auto" style="max-width: 560px; padding: 30px;">
+      <div class="section-title">Access</div>
+      <h1 class="page-heading" style="font-size: 2.2rem;">Welcome Back</h1>
+      <p class="page-subtitle mb-4">Sign in to manage your writing dashboard, stats, and latest blog activity.</p>
+
+      <form action="/user/signin" method="post" class="d-grid gap-3">
+        <div>
+          <label for="email" class="form-label fw-semibold">Email address</label>
+          <input type="email" class="form-control surface-input" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+
+        <div>
+          <label for="password" class="form-label fw-semibold">Password</label>
+          <input type="password" class="form-control surface-input" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="brand-btn border-0">Signin</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include("./partials/scripts") %>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title>Edit Blog</title>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+
+  <div class="page-wrap">
+    <div class="page-card">
+      <div class="section-title">Update</div>
+      <h1 class="page-heading">Edit Blog</h1>
+      <p class="page-subtitle mb-4">Refine your story while keeping version history intact.</p>
+
+      <form action="/blog/<%= blog._id %>/update" method="post" enctype="multipart/form-data" class="d-grid gap-3">
+        <div>
+          <label for="coverImage" class="form-label fw-semibold">Cover Image</label>
+          <input type="file" class="form-control surface-input" id="coverImage" name="coverImage">
+        </div>
+        <div>
+          <label for="title" class="form-label fw-semibold">Title</label>
+          <input type="text" class="form-control surface-input" id="title" name="title" value="<%= blog.title %>" required>
+        </div>
+        <div>
+          <label for="category" class="form-label fw-semibold">Category</label>
+          <select class="form-select surface-select" id="category" name="category">
+            <% ["General", "Technology", "Programming", "Lifestyle", "News"].forEach(category => { %>
+              <option value="<%= category %>" <%= blog.category === category ? "selected" : "" %>><%= category %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label for="body" class="form-label fw-semibold">Body</label>
+          <textarea name="body" class="form-control surface-textarea" id="body" rows="10" required><%= blog.body %></textarea>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="isDraft" name="isDraft" <%= blog.isDraft ? "checked" : "" %>>
+          <label class="form-check-label" for="isDraft">Save as draft</label>
+        </div>
+        <button class="brand-btn border-0" type="submit">Update Blog</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include("./partials/scripts") %>
+</body>
+</html>

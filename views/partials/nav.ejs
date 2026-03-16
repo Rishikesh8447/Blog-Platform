@@ -1,0 +1,40 @@
+<div class="page-wrap" style="margin-bottom: 18px;">
+  <nav class="page-card d-flex flex-wrap align-items-center justify-content-between gap-3" style="padding: 18px 22px; background: linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 96%, white), color-mix(in srgb, var(--surface) 92%, white));">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/" class="text-decoration-none d-inline-flex align-items-center gap-2" style="color: var(--ink);">
+        <span style="width: 40px; height: 40px; border-radius: 14px; display:grid; place-items:center; background: linear-gradient(135deg, var(--accent), #46b67d); color:white; font-weight:800;">B</span>
+        <span style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.03em;">Blogora</span>
+      </a>
+      <a class="ghost-btn" href="/">Home</a>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <label for="themeSelector" class="small soft-muted fw-semibold mb-0">Theme</label>
+        <select id="themeSelector" class="surface-select" style="min-width: 150px; padding-block: 10px;">
+          <option value="light">Light</option>
+          <option value="sage">Sage</option>
+          <option value="forest">Forest</option>
+          <option value="midnight">Midnight</option>
+          <option value="latte">Latte</option>
+        </select>
+      </div>
+      <% if (locals.user) { %>
+        <a class="ghost-btn" href="/blog/add-new">Add Blog</a>
+        <a class="ghost-btn" href="/blog/stats/dashboard">Stats</a>
+        <a class="ghost-btn" href="/blog/random">Random</a>
+        <a class="brand-btn" href="/author/<%= encodeURIComponent(locals.user.fullName.toLowerCase().replace(/\s+/g, "-")) %>"><%= locals.user.fullName %></a>
+        <a class="ghost-btn" href="/user/logout">Logout</a>
+      <% } else { %>
+        <a class="ghost-btn" href="/user/signup">Create Account</a>
+        <a class="brand-btn" href="/user/signin">Signin</a>
+      <% } %>
+    </div>
+  </nav>
+</div>
+
+<% if (locals.error) { %>
+  <div class="page-wrap" style="margin-top: 0;">
+    <div class="alert alert-danger rounded-2xl border-0 shadow-sm"><%= locals.error %></div>
+  </div>
+<% } %>

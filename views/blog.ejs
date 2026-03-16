@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include("./partials/head") %>
+  <title><%= blog.title %></title>
+  <style>
+    body.focus-mode .page-wrap:first-of-type,
+    body.focus-mode .blog-sidebar {
+      display: none !important;
+    }
+    body.focus-mode #blog-layout { max-width: 860px; margin: 0 auto; }
+    body.focus-mode #blog-content { font-size: 1.15rem; line-height: 1.9; }
+    .quote-share-popover { position: absolute; z-index: 1050; display: none; }
+    .blog-paragraph.highlighted { background: #fff3cd; border-radius: 10px; padding: 0.35rem 0.5rem; }
+    .confirm-toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: min(420px, calc(100vw - 32px));
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 60px rgba(18, 32, 23, 0.18);
+      z-index: 1080;
+      display: none;
+    }
+    .confirm-toast.is-visible { display: block; }
+    .confirm-toast__title { font-size: 1rem; font-weight: 800; margin-bottom: 0.35rem; }
+    .confirm-toast__text { color: var(--muted); margin-bottom: 1rem; }
+    .confirm-toast__actions { display: flex; justify-content: flex-end; gap: 10px; }
+    .danger-btn {
+      padding: 11px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      color: white;
+      background: linear-gradient(135deg, #c63d2d, #e25b47);
+      box-shadow: 0 14px 24px rgba(198, 61, 45, 0.18);
+    }
+  </style>
+</head>
+<body>
+  <%- include("./partials/nav") %>
+
+  <div class="progress sticky-top" style="height: 4px; z-index: 1030;">
+    <div id="reading-progress" class="progress-bar" role="progressbar" style="width: 0%; background: linear-gradient(135deg, var(--accent), #46b67d);"></div>
+  </div>
+
+  <div class="page-wrap">
+    <div id="blog-layout" class="row g-4">
+      <div class="col-xl-8">
+        <section class="page-card">
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+              <div class="section-title">Article</div>
+              <h1 class="page-heading"><%= blog.title %></h1>
+              <div class="d-flex align-items-center gap-3 mt-3">
+                <img src="<%= blog.createdBy.profileImageURL %>" width="52" height="52" class="rounded-circle" alt="<%= blog.createdBy.fullName %>">
+                <div>
+                  <div class="fw-semibold"><a href="/user/<%= blog.createdBy._id %>" class="text-decoration-none" style="color: var(--ink);"><%= blog.createdBy.fullName %></a></div>
+                  <div class="soft-muted small"><%= blog.category || "General" %> | <%= blog.readingTime || 1 %> min read | <%= blog.views || 0 %> views</div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-end">
+              <button id="focus-toggle" class="ghost-btn border-0" type="button">Focus Mode</button>
+              <% if (canManage) { %>
+                <a href="/blog/<%= blog.slug || blog._id %>/edit" class="ghost-btn">Edit</a>
+                <a href="/blog/<%= blog.slug || blog._id %>/history" class="ghost-btn">History</a>
+                <form id="delete-blog-form" action="/blog/<%= blog._id %>/delete" method="post" class="m-0">
+                  <button id="delete-blog-trigger" type="button" class="ghost-btn border-0" style="color:#b42318; border-color: rgba(180,35,24,0.2); background: rgba(180,35,24,0.08);">Delete</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+
+          <% if (blog.coverImageURL) { %>
+            <img src="<%= blog.coverImageURL %>" class="img-fluid rounded-2xl mb-4 w-100" style="max-height: 420px; object-fit: cover;" alt="<%= blog.title %>">
+          <% } %>
+
+          <div class="d-flex gap-2 align-items-center mb-4 flex-wrap">
+            <form action="/blog/like/<%= blog._id %>" method="post" class="m-0">
+              <button class="<%= isLikedByUser ? "brand-btn" : "ghost-btn" %> border-0" type="submit">Like (<%= likesCount %>)</button>
+            </form>
+            <span class="mini-pill"><%= comments.length %> comments</span>
+          </div>
+
+          <div id="blog-content" class="section-card">
+            <%- renderedBody %>
+          </div>
+        </section>
+
+        <section class="section-card mt-4">
+          <div class="panel__header">
+            <h3 class="panel__title">Comments (<%= comments.length %>)</h3>
+          </div>
+          <% if (locals.user) { %>
+            <form action="/blog/comment/<%= blog._id %>" method="post" class="mb-4">
+              <div class="input-group">
+                <input type="text" class="form-control surface-input" name="content" placeholder="Enter your comment" required>
+                <button class="brand-btn border-0" type="submit">Add</button>
+              </div>
+            </form>
+          <% } else { %>
+            <div class="alert alert-light border rounded-2xl mb-4">Sign in to like or comment on this blog.</div>
+          <% } %>
+
+          <div class="d-grid gap-3">
+            <% comments.forEach(comment => { %>
+              <div class="app-list-item">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <img src="<%= comment.createdBy.profileImageURL %>" width="40" height="40" class="rounded-circle" alt="<%= comment.createdBy.fullName %>">
+                  <strong><%= comment.createdBy.fullName %></strong>
+                </div>
+                <div><%= comment.content %></div>
+              </div>
+            <% }) %>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-xl-4 blog-sidebar">
+        <% if (toc.length) { %>
+          <section class="section-card mb-4">
+            <div class="panel__header">
+              <h3 class="panel__title">Table of Contents</h3>
+            </div>
+            <div class="d-grid gap-2">
+              <% toc.forEach(item => { %>
+                <a href="#<%= item.id %>" class="text-decoration-none" style="margin-left: <%= (item.level - 1) * 12 %>px; color: var(--ink);"><%= item.text %></a>
+              <% }) %>
+            </div>
+          </section>
+        <% } %>
+
+        <% if (recommendations.length) { %>
+          <section class="section-card">
+            <div class="panel__header">
+              <h3 class="panel__title">Recommended</h3>
+            </div>
+            <div class="d-grid gap-3">
+              <% recommendations.forEach(recommendation => { %>
+                <a href="/blog/<%= recommendation.slug || recommendation._id %>" class="app-list-item text-decoration-none">
+                  <strong style="color: var(--ink);"><%= recommendation.title %></strong>
+                  <div class="small soft-muted"><%= recommendation.category || "General" %></div>
+                </a>
+              <% }) %>
+            </div>
+          </section>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <button id="quote-share-popover" class="brand-btn border-0 quote-share-popover" type="button">Share Quote</button>
+  <div id="delete-confirm-toast" class="confirm-toast" role="alertdialog" aria-modal="true" aria-labelledby="delete-toast-title">
+    <div id="delete-toast-title" class="confirm-toast__title">Delete this blog?</div>
+    <div class="confirm-toast__text">This action is permanent and will also remove all comments for this post.</div>
+    <div class="confirm-toast__actions">
+      <button id="delete-toast-cancel" type="button" class="ghost-btn border-0">Cancel</button>
+      <button id="delete-toast-confirm" type="button" class="danger-btn">Delete</button>
+    </div>
+  </div>
+
+  <%- include("./partials/scripts") %>
+  <script>
+    (() => {
+      const progressBar = document.getElementById("reading-progress");
+      const blogContent = document.getElementById("blog-content");
+      const focusToggle = document.getElementById("focus-toggle");
+      const quotePopover = document.getElementById("quote-share-popover");
+      const deleteTrigger = document.getElementById("delete-blog-trigger");
+      const deleteForm = document.getElementById("delete-blog-form");
+      const deleteToast = document.getElementById("delete-confirm-toast");
+      const deleteCancel = document.getElementById("delete-toast-cancel");
+      const deleteConfirm = document.getElementById("delete-toast-confirm");
+
+      if (focusToggle) {
+        focusToggle.addEventListener("click", () => {
+          document.body.classList.toggle("focus-mode");
+        });
+      }
+
+      function updateProgress() {
+        if (!progressBar || !blogContent) return;
+        const top = blogContent.offsetTop;
+        const height = blogContent.offsetHeight - window.innerHeight;
+        if (height <= 0) {
+          progressBar.style.width = "100%";
+          return;
+        }
+        const progress = Math.min(Math.max(((window.scrollY - top) / height) * 100, 0), 100);
+        progressBar.style.width = `${progress}%`;
+      }
+
+      function hideQuotePopover() {
+        if (quotePopover) quotePopover.style.display = "none";
+      }
+
+      function showDeleteToast() {
+        if (deleteToast) deleteToast.classList.add("is-visible");
+      }
+
+      function hideDeleteToast() {
+        if (deleteToast) deleteToast.classList.remove("is-visible");
+      }
+
+      window.addEventListener("scroll", updateProgress);
+      updateProgress();
+
+      if (deleteTrigger) {
+        deleteTrigger.addEventListener("click", showDeleteToast);
+      }
+
+      if (deleteCancel) {
+        deleteCancel.addEventListener("click", hideDeleteToast);
+      }
+
+      if (deleteConfirm && deleteForm) {
+        deleteConfirm.addEventListener("click", () => {
+          deleteForm.submit();
+        });
+      }
+
+      document.addEventListener("mouseup", () => {
+        const selection = window.getSelection();
+        const selectedText = selection ? selection.toString().trim() : "";
+        if (!selectedText || !quotePopover) {
+          hideQuotePopover();
+          return;
+        }
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        quotePopover.style.display = "block";
+        quotePopover.style.top = `${window.scrollY + rect.top - 40}px`;
+        quotePopover.style.left = `${window.scrollX + rect.left}px`;
+        quotePopover.dataset.quote = selectedText;
+      });
+
+      document.addEventListener("mousedown", (event) => {
+        if (quotePopover && !quotePopover.contains(event.target)) {
+          setTimeout(hideQuotePopover, 50);
+        }
+        if (deleteToast && deleteToast.classList.contains("is-visible") && !deleteToast.contains(event.target) && event.target !== deleteTrigger) {
+          hideDeleteToast();
+        }
+      });
+
+      if (quotePopover) {
+        quotePopover.addEventListener("click", async () => {
+          const quote = quotePopover.dataset.quote || "";
+          const shareText = `"${quote}" - ${document.title}`;
+          const shareUrl = window.location.href;
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: document.title, text: shareText, url: shareUrl });
+            } catch (error) {}
+          } else {
+            await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+            quotePopover.textContent = "Copied";
+            setTimeout(() => {
+              quotePopover.textContent = "Share Quote";
+              hideQuotePopover();
+            }, 1000);
+          }
+        });
+      }
+
+      document.querySelectorAll(".blog-paragraph").forEach((paragraph) => {
+        paragraph.addEventListener("dblclick", () => {
+          paragraph.classList.toggle("highlighted");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
