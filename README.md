@@ -8,7 +8,7 @@ The platform provides a clean UI, a modern writing editor, and features like tre
 ## 🚀 Live Demo
 
 🌐 Live Website: https://blog-platform-2nir.onrender.com/
-📂 GitHub Repository: # 📝 Blog Platform
+📂 GitHub Repository:https://github.com/Rishikesh8447/Blog-Platform
 
 A **Full Stack Blogging Platform** where users can create, read, update, and interact with blog posts.  
 The platform provides a clean UI, a modern writing editor, and features like trending blogs, dark mode, and comments.
